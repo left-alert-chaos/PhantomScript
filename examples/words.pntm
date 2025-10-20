@@ -1,3 +1,4 @@
+#Very simple text editor
 print "Please enter file to write in:"
 var fileName $input
 
@@ -20,4 +21,5 @@ while Yes
     stack old "\n"
     stack old $line
     write $fileName $old
+
 end
