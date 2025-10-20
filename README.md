@@ -8,6 +8,11 @@ As demonstrated by the above example, the syntax does not use () for function ca
 
 In case you couldn't tell, it's heavily inspired by Lua.
 
+To run a program, you can:
+- Run `python3 main.py <file>`
+- Run `.\main.exe <file>`
+- Run like a normal Python script and enter the file to execute when prompted.
+
 ## All Keywords/Syntax
 ### Overview
 - `print`: prints value of any type to console.
@@ -68,5 +73,6 @@ end
 
 ## How it Works
 Variables are stored in a `namespace` dictionary. There are three data types: `string`, `num`, and `boolean`. Nums are all Python floats, so even if you set a variable to a whole number it will be stored as a decimal.
+
 
 Inline scripts are processed as one word initially and then replaced with their resulting boolean values. Because of this, they use their own type preprocessor. If you're curious, you can look in the `simplify(script)` function in the interpreter.
