@@ -1,0 +1,23 @@
+print "Please enter file to write in:"
+var fileName $input
+
+print "This will clear the file you entered if it already exists. Enter 'n' to cancel."
+var choice $input
+if @$choice:is:"n"
+    exit
+end
+
+write $fileName ""
+
+while Yes
+    var line $input
+
+    if @$line:is:"exit"
+        exit
+    end
+
+    read $fileName old
+    stack old "\n"
+    stack old $line
+    write $fileName $old
+end

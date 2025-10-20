@@ -1,0 +1,17 @@
+print "Let's play a game!"
+print "I'll think of a word and you'll guess."
+print "[press enter to continue]"
+wait
+
+var guess ""
+
+while @$guess:!=:"answer"
+    print "Please enter a guess:"
+    var guess $input
+
+    if @$guess:!=:"answer"
+        print "Sorry, incorrect."
+    end
+end
+
+print "Correct! You win!"
