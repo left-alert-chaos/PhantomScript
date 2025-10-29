@@ -8,6 +8,8 @@ As demonstrated by the above example, the syntax does not use () for function ca
 
 In case you couldn't tell, it's heavily inspired by Lua.
 
+I should also probably mention that this is a concept toy language that started life as an esolang. It cannot and should not be used for real applications.
+
 To run a program, you can:
 - Run `python3 main.py <file>`
 - Run `.\main.exe <file>`
@@ -76,3 +78,4 @@ Variables are stored in a `namespace` dictionary. There are three data types: `s
 
 
 Inline scripts are processed as one word initially and then replaced with their resulting boolean values. Because of this, they use their own type preprocessor. If you're curious, you can look in the `simplify(script)` function in the interpreter.
+
