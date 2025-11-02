@@ -43,7 +43,7 @@ To run a program, you can:
     `function funcName`
 - `while`: start a while loop. See explanation.
     - `while Yes`
-- `break`: don't restart next time loop finishes. See explanation.
+- `break`: immediately end loop and continue after loop.
 - `read <fileName> <outputVar>`: if a file exists, it gets its contents and outputs string to outputVar.
 - `write <fileName> <text>`: writes a value to a file.
 
@@ -51,7 +51,6 @@ To run a program, you can:
 - `if`: Bools are stored as either `Yes` or `No`. If the given bool is `No`, then lines are skipped indefinitely. You can exit and start executing again with `end`.
 - `function`: Functions don't have their own namespaces, so **they don't support arguments**. You can put anything in a function. They are ended with `end` just like other blocks.
 - `while`: While loops behave like functions in that they store a line to return to when `end` is reached. When they return to their starting line, the conditional is read again and if it is `Yes`, the loop goes again. If it is `No`, execution keeps going from the loop's start but skips the loop's contents.
-- `break`: This **does not** end the loop here and now. Instead, it makes the loop not return to its start the next time it completes.
 - `@<value1>:<operator>:<value2>`: Inline scripts are used to do boolean operations and very simple math. The operator is used to compare the values. Operators:
   - `<`
   - `>`
