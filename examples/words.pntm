@@ -14,12 +14,16 @@ while Yes
     var line $input
 
     if @$line:is:"exit"
-        exit
+        break
     end
 
     read $fileName old
     stack old "\n"
     stack old $line
     write $fileName $old
+    
+    print "Line written to file."
 
 end
+
+print "Done."

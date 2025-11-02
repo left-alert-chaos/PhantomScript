@@ -150,14 +150,22 @@ def whileLoop():
 
 
 def breakStatement():
-    global shouldBreak
-    shouldBreak = True
+    global layers
+
+    #new, better
+    layers.reverse()
+    for i in layers:
+        if isinstance(i, int):
+            index = layers.index(i)
+            break
+    layers.pop(index)
+    layers.insert(index, "unmet")
+    layers.reverse()
 
 
 def endBlock():
     global lineNum
     global elsePasses
-    global shouldBreak
     layer = layers.pop()
     if len(layers) <= 0:
         return "err EndedHost - No block to end"
@@ -167,12 +175,10 @@ def endBlock():
         elsePasses = False
 
     #handle function returns
-    if isinstance(layer, int) and not shouldBreak:
+    if isinstance(layer, int):
         lineNum = layer
         if text[lineNum] == "exit":
             return "exit"
-    elif shouldBreak:
-        shouldBreak = False
 
 
 def functionDef():
@@ -230,7 +236,7 @@ def replaceVals(args):
             old = args.pop(aindex)
 
             #this line has code from StackOverFlow
-            new = string(old.replacereplace("\n".encode("unicode_escape").decode("utf-8"), "\n")[1:-1])
+            new = string(old.replace("\n".encode("unicode_escape").decode("utf-8"), "\n")[1:-1])
 
             args.insert(aindex, new)
         elif arg.count('"') % 2 != 0:
@@ -342,7 +348,6 @@ namespace = {}
 locs = {}
 funcs = {}
 elsePasses = False
-shouldBreak = False
 
 #holds functions to handle keywords
 #end is empty bc it calls in a different area than other kws and otherwise deletes too many layers
