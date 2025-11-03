@@ -61,12 +61,16 @@ def isValidArray(foo):
     return foo.startswith("{") and foo.endswith("}")
 
 
+def isValidDeclaration(foo):
+    return isValidArray(foo) or isValidString(foo) or foo.isdecimal() or isValid(foo) or foo in ("Yes", "No")
+
+
 def boo():
     if len(words) == 1:
         print()
     elif len(words) == 2:
         if not isValid(words[1]):
-            return "err InputNotValid"
+            return f"err InputNotValid - {type(words[1])}"
         print(words[1].value)
     elif len(words) > 2:
         return "err TooManyArgs"
@@ -184,7 +188,12 @@ def endBlock():
 def functionDef():
     if not len(words) >= 2:
         return "err InvalidNumberOfArgs"
-    funcs[words[1]] = lineNum
+    
+    name = words[1]
+    if currentNamespace != "main":
+        name = f"{currentNamespace}:{name}"
+
+    funcs[name] = lineNum
     layers.append("unmet")
 
 
@@ -198,18 +207,35 @@ def goto():
 
 
 def add():
-    if not len(words) == 3:
+    if len(words) < 3:
         return "err InvalidNumberOfArgs"
     var = words[1]
     val = words[2]
+
+    if len(words) == 4:
+        val = words[3]
+        key = words[2]
+    elif len(words) > 3:
+        return "err InvalidNumberOfArgs"
+
     if line.split()[1].startswith("$"):
-        return "err WantedVarNameNotValue - If you referenced the variable with $, delete it. You want to reference the variable, not its value."
+        return "err WantedVarNameNotValue - If you referenced the variable with $, delete the symbol. You want to reference the variable, not its value."
     if isinstance(namespace[var], boolean):
         return "err BooleanNotSupported"
     if not var in namespace:
         return "err InvalidValueOrType"
+    if isinstance(namespace[var], array):
+        arr = namespace[var]
+
+        #generate new key
+        key = max([-1]+[int(i) for i in arr.value.keys() if isinstance(i, int) or i.isdecimal()]) + 1
+        
+        arr.value[key] = val
+        return
     if not type(namespace[var]) == type(val):
         return f"err IncompatibleTypes - {type(namespace[var])}, {type(val)}"
+
+    #actually do thing
     namespace[var].value += val.value
 
 
@@ -247,14 +273,54 @@ def replaceVals(args):
     return args
 
 
+#allow for operations on variables
+def attribute():
+    if len(words) < 2:
+        return "err InvalidNumberOfArgs"
+    name = words[0]
+    subcommand = words[1]
+    print(f"words length: {len(words)} words: {words}")
+    if isinstance(namespace[name], array):
+        print("var to operate on is an array")
+        if subcommand == "item":
+            namespace[name].value[words[2].value] = words[3]
+            print(namespace[name].value)
+    if isinstance(namespace[name], num):
+        if subcommand == "++":
+            namespace[name].value += 1
+            return
+        if subcommand == "--":
+            namespace[name].value -= 1
+
+
 def simplify(script):
     #simplify inline expressions/scripts
     args = script.split(":")
-    if not len(args) == 3:
+    if (not len(args) == 3) and not (len(args) == 2 and isValidDeclaration(args[1])):
         return "err InvalidNumberOfArgs - InlineScript"
     operator = args[1]
 
     args = replaceVals(args)
+
+    #get indices of arrays, strings
+    if isValid(args[0]):
+        key = args[1].value
+        if isinstance(args[0], num):
+            return "err NumsNotIndexable - InlineScript"
+        if isinstance(args[0], boolean):
+            return "err BooleansNotIndexable - InlineScript"
+        value = args[0].value[key]
+        
+        #convert to appropriate language obj
+        #if already language obj, leave as-is
+        if isinstance(value, bool):
+            value = boolean(value)
+        elif isinstance(value, str):
+            value = string(value)
+        elif isinstance(value, float):
+            value = num(value)
+        return value
+        
 
     #operators
     if operator in ["==", "is"]:
@@ -297,14 +363,38 @@ def makeArray(rawDeclaration):
     args = rawDeclaration[2:-2].strip().split()
     args = replaceVals(args)
 
-    problems = []
-
-    #make sure no unknown values
-    [problems.append(i) for i in args if not isValid(i)]
+    problems = [i for i in args if not isValid(i)]
     if len(problems) != 0:
         return f"err InvalidValueOrType - {problems[0]}"
 
     return array(args)
+
+
+def funcCall():
+    global res
+    global layers
+    global lineNum
+    global namespace
+    global namespaces
+    global kw
+
+    #move CPU
+    layers.append(lineNum)
+    lineNum = funcs[kw]
+    res = None
+
+    #hadle contexts
+    if not ":" in kw:
+        #func is in main
+        namespace = namespaces["main"]
+    else:
+        #func is in custom namespace
+        if len(kw.split(":")) != 2:
+            return "err InvalidFunctionName - Incorrect number of ownership levels"
+        nsn = kw.split(":")[0]
+        if nsn not in namespaces.keys():
+            return "err InvalidNamespaceName - Undefined namespace"
+        namespace = namespaces[nsn]
 
 
 #get file name
@@ -328,7 +418,7 @@ elif len(sys.argv) == 2 and not sys.argv[0].startswith("python"):
 #i am aware that os.path.isfile exists. Please don't yell at me about this.
 if filename == "":
     while True:
-        filename = input("What file should we execute?\n>")
+        filename = input("Please select a file to run:\n>")
         try:
             with open(filename, "r") as target:
                 text = target.read()
@@ -339,15 +429,17 @@ if filename == "":
 
 text = text.split("\n") + ["exit"]
 
-#print("Killing -I mean executing- file...\n")
 print()
 
 lineNum = 0
 layers = ["host"]
-namespace = {}
 locs = {}
 funcs = {}
 elsePasses = False
+
+namespaces = {"main": {}}
+namespace = namespaces["main"]
+currentNamespace = "main"
 
 #holds functions to handle keywords
 #end is empty bc it calls in a different area than other kws and otherwise deletes too many layers
@@ -365,7 +457,8 @@ kws = {"print": boo,
        "break": breakStatement,
        "else": elseBlock,
        "write": writeFile,
-       "read": readFile}
+       "read": readFile,
+       "process": attribute}
 layerStarters = ["if", "while", "else", "function"]
 
 #iterate over file's lines to execute
@@ -462,12 +555,13 @@ while True:
 
     res = "err KeywordNotFound"
 
+    #process keywords
     if kw in kws:
         res = kws[kw]()
     elif kw in funcs.keys():
-        layers.append(lineNum)
-        lineNum = funcs[kw]
-        res = None
+        res = funcCall()
+    elif kw in namespace:
+        res = kws["process"]()
 
     if isinstance(res, str) and res.startswith("err"):
         error(res)
