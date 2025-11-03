@@ -192,7 +192,6 @@ def endBlock():
 def functionDef():
     if not len(words) >= 2:
         return "err InvalidNumberOfArgs"
-    
     name = words[1]
     if currentNamespace != "main":
         name = f"{currentNamespace}:{name}"
