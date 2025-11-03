@@ -181,6 +181,10 @@ def endBlock():
     #handle function returns
     if isinstance(layer, int):
         lineNum = layer
+        if layer in funcs.keys():
+            #handle return to original context
+            oldContext = namespaceHistory.pop()
+            namespace = namespaces[namespaceHistory[-1]]
         if text[lineNum] == "exit":
             return "exit"
 
@@ -387,14 +391,17 @@ def funcCall():
     if not ":" in kw:
         #func is in main
         namespace = namespaces["main"]
+        namespaceHistory.append("main")
     else:
         #func is in custom namespace
         if len(kw.split(":")) != 2:
             return "err InvalidFunctionName - Incorrect number of ownership levels"
+        
         nsn = kw.split(":")[0]
         if nsn not in namespaces.keys():
             return "err InvalidNamespaceName - Undefined namespace"
         namespace = namespaces[nsn]
+        namespaceHistory.append(nsn)
 
 
 #get file name
@@ -440,6 +447,7 @@ elsePasses = False
 namespaces = {"main": {}}
 namespace = namespaces["main"]
 currentNamespace = "main"
+namespaceHistory = ["main"]
 
 #holds functions to handle keywords
 #end is empty bc it calls in a different area than other kws and otherwise deletes too many layers
