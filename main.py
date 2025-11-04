@@ -3,6 +3,7 @@ import gc
 import time
 import sys
 import os
+import copy
 
 
 class string:
@@ -73,18 +74,36 @@ def boo():
             return f"err InputNotValid - {type(words[1])}"
         print(words[1].value)
     elif len(words) > 2:
-        return "err TooManyArgs"
+        return "err TooManyArgs - Expected 2"
 
 
 def var():
     if not len(words) == 3:
-        return "err InvalidNumberOfArgs"
+        return "err InvalidNumberOfArgs - Expected 3"
     namespace[words[1]] = words[2]
+
+
+def instantiate():
+    if not len(words) == 3:
+        return "err InvalidNumberOfArgs - Expected 3"
+    
+    old = words[1]
+    new = words[2]
+
+    if not words[1] in namespaces:
+        return f"err InvalidObject - '{old}'"
+    namespaces[new] = copy.deepcopy(namespaces[old])
+
+    #copy all owned funcs
+    owned = {i: j for i, j in funcs.items() if i.startswith(f"{old}.")}
+    for name, index in owned.items():
+        newName = name.replace(f"{old}.", f"{new}.")
+        funcs[newName] = index
 
 
 def readFile():
     if not len(words) == 3:
-        return "err InvalidNumberOfArgs"
+        return "err InvalidNumberOfArgs - Expected 3"
     if not isinstance(words[1], string):
         return f"err InvalidValueOrType - {words[1]}"
     if isValid(words[2]):
@@ -99,7 +118,7 @@ def readFile():
 
 def writeFile():
     if not len(words) == 3:
-        return "err InvalidNumberOfArgs"
+        return "err InvalidNumberOfArgs - Expected 3"
     if not isinstance(words[1], string):
         return f"err InvalidValueOrType - {words[1]}"
     if not isValid(words[2]):
@@ -110,7 +129,7 @@ def writeFile():
 
 def loc():
     if not len(words) == 2:
-        return "err InvalidNumberOfArgs"
+        return "err InvalidNumberOfArgs - Expected 2"
     if not isValid(words[1]):
         return "err InvalidValueOrType"
     locs[words[1].value] = lineNum
@@ -118,7 +137,7 @@ def loc():
 
 def conditional():
     if len(words) != 2:
-        return "err InvalidNumberOfArgs"
+        return "err InvalidNumberOfArgs - Expected 2"
     if not isinstance(words[1], boolean):
         return f"err InvalidValueOrType - {type(words[1])}"
     if words[1].value == "Yes":
@@ -130,7 +149,7 @@ def conditional():
 def elseBlock():
     global elsePasses
     if len(words) > 2:
-        return "err InvalidNumberOfArgs"
+        return "err InvalidNumberOfArgs - Expected 1 or 2"
     if not elsePasses:
         layers.append("unmet")
         return
@@ -143,7 +162,7 @@ def elseBlock():
 def whileLoop():
     global isLoop
     if len(words) != 2:
-        return "err InvalidNumberOfArgs"
+        return "err InvalidNumberOfArgs - Expected 2"
     isLoop = True
     if not isinstance(words[1], boolean):
         return f"err InvalidValue - While loops need booleans"
@@ -500,7 +519,8 @@ kws = {"print": boo,
        "write": writeFile,
        "read": readFile,
        "process": attribute,
-       "object": makeNS}
+       "object": makeNS,
+       "copy": instantiate}
 layerStarters = ["if", "while", "else", "function"]
 
 #iterate over file's lines to execute

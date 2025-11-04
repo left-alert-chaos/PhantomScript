@@ -8,7 +8,7 @@ As demonstrated by the above example, the syntax does not use () for function ca
 
 In case you couldn't tell, it's heavily inspired by Lua.
 
-I should also probably mention that this is a concept toy language that started life as an esolang. It cannot and should not be used for real applications.
+I should also probably mention that this is a concept toy language that started life as an esolang. It cannot and should not be used for real applications. There are many bugs, some known, some not. If something doesn't work, feel free to let me know but do not panic and do not be surprised.
 
 To run a program, you can:
 - Run `python3 main.py <file>`
@@ -25,6 +25,50 @@ To run a program, you can:
   - `No`
 - Arrays: type elements as their own words inside braces. The braces must be seperated by one space from the first and last elements. To create an array of all the ways to say "one":
   - `{ 1 1.0 "one" }`
+
+### Object-Oriented Syntax
+*The syntax for creating and copying custom objects will be here instead of the main list.*
+
+To create an object type, you use the `object` keyword. Example:
+
+``` PhantomScript
+object thing1
+  let myVar 1
+end
+```
+
+The above example creates an object `thing1` and gives it the local variable `myVar`. Right now, there is no way to access local variables from the main namespace.
+
+To give an `object` functions, we define functions inside it. Example:
+
+``` PhantomScript
+object thing1
+  function chaos
+    print "I'm causing chaos!"
+  end
+end
+
+thing1.chaos
+```
+
+This snippet creates an object called `thing1`, gives it a function `chaos`, and then calls the function. Functions share variables with the rest of their namespaces.
+
+Note that in the above snippet, we didn't need to create an instance of `thing1`. This is because namespaces are real as soon as they are created with `object`. To create more than one instance of an `object`, we use the `copy` keyword. Example:
+
+``` PhantomScript
+object thing1
+  function chaos
+    print "I'm causing chaos!"
+  end
+end
+
+thing1.chaos
+
+copy thing1 thing2
+thing2.chaos
+```
+
+This example does everything from before, but it then uses `copy` to create `thing2`, which is identical to `thing1`. This is how you instantiate classes. However, `copy` just creates a duplicate of whichever namespace you provide so you don't have to give it original `object`s. Instead, you could give it a modified `object` instance and it will copy that instead.
 
 ### Indices
 This probably shouldn't get its own section, but I had to put it somewhere.
@@ -115,7 +159,7 @@ end
 ```
 
 ## How it Works
-Variables are stored in a `namespace` dictionary. There are three data types: `string`, `num`, and `boolean`. Nums are all Python floats, so even if you set a variable to a whole number it will be stored as a decimal.
+Variables are stored in a `namespace` dictionary. There are four data types: `string`, `num`, `boolean` and `array`. Nums are all Python floats, so even if you set a variable to a whole number it will be stored as a decimal. Arrays can act like dictionaries or lists, but are dictionaries under the hood.
 
 
 Inline scripts are processed as one word initially and then replaced with their resulting values. Because of this, they use their own type preprocessor. If you're curious, you can look in the `simplify(script)` function in the interpreter.

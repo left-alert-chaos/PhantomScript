@@ -1,0 +1,19 @@
+object counter
+    let count 0
+
+    function increment
+        count ++
+        print "Count:"
+        print $count
+    end
+end
+
+copy counter myCounter
+
+print "Incrementing instance 3 times."
+myCounter.increment
+myCounter.increment
+myCounter.increment
+
+print "Incrementing original once."
+counter.increment
