@@ -176,6 +176,7 @@ def endBlock():
     global namespace
     global namespaces
     global isLoop
+    global namespaceHistory
     layer = layers.pop()
     if len(layers) <= 0:
         return "err EndedHost - No block to end"
@@ -189,7 +190,12 @@ def endBlock():
         lineNum = layer
         if not isLoop:
             #handle return to original context
-            namespaceHistory.pop()
+            old = namespaceHistory.pop()
+
+            #not the greatest approach, but its 8 pm and im tired
+            if len(namespaceHistory) == 0:
+                namespaceHistory = [old]
+            
             namespace = namespaces[namespaceHistory[-1]]
         else:
             isLoop = False
@@ -316,7 +322,7 @@ def simplify(script):
     args = replaceVals(args)
 
     #get indices of arrays, strings
-    if isValid(args[0]):
+    if len(args) == 2:
         key = args[1].value
         if isinstance(args[0], num):
             return "err NumsNotIndexable - InlineScript"
@@ -390,6 +396,9 @@ def funcCall():
     global namespace
     global namespaces
     global kw
+    global isLoop
+
+    isLoop = False
 
     #move CPU
     layers.append(lineNum)
