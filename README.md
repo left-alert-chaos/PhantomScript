@@ -28,7 +28,7 @@ To run a program, you can:
 
 ### Object-Oriented Syntax
 *The syntax for creating and copying custom objects will be here instead of the main list.*
-
+#### Creating Objects
 To create an object type, you use the `object` keyword. Example:
 
 ``` PhantomScript
@@ -69,6 +69,31 @@ thing2.chaos
 ```
 
 This example does everything from before, but it then uses `copy` to create `thing2`, which is identical to `thing1`. This is how you instantiate classes. However, `copy` just creates a duplicate of whichever namespace you provide so you don't have to give it original `object`s. Instead, you could give it a modified `object` instance and it will copy that instead.
+
+#### The 'this' Keyword
+The `this` keyword references the current namespace and is replaced with the current namespace's name at runtime. It is used to make self-referencing `object`s copy safe. Example:
+
+``` PhantomScript
+object counter
+  let count 0
+  function hidden_function
+    count ++
+    print $count
+  end
+
+  function tick
+    this.hidden_function
+  end
+end
+
+copy counter tracker1
+copy counter tracker2
+
+tracker1.tick
+tracker2.tick
+```
+
+Here, a `counter` `object` is created with 2 functions: one that the user will call and one the user won't. The `this` keyword is used so that the current `counter`'s `count` will go up and not the base `object`'s.
 
 ### Indices
 This probably shouldn't get its own section, but I had to put it somewhere.
