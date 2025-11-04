@@ -32,6 +32,24 @@ class array:
             self.value = value
 
 
+#re.findall wasn't working so I made a much worse version
+def getStrings(line):
+    tracking = False
+    strings = []
+    current = ""
+    elapsed = ""
+    for i in line:
+        if i == '"':
+            tracking = not tracking
+            if not tracking:
+                elapsed += '"'
+                strings.append(elapsed)
+                elapsed = ""
+        if tracking:
+            elapsed += i
+    return strings
+
+
 #determine if a str is a num
 def isNum(numberString):
     try:
@@ -234,6 +252,11 @@ def functionDef():
         name = f"{currentNamespace}.{name}"
 
     funcs[name] = lineNum
+
+    #arguments
+    if len(words) > 2:
+        funcRequirements[name] = words[2::]
+
     layers.append("unmet")
 
 
@@ -418,13 +441,9 @@ def funcCall():
     global kw
     global isLoop
     global currentNamespace
+    global funcRequirements
 
     isLoop = False
-
-    #move CPU
-    layers.append(lineNum)
-    lineNum = funcs[kw]
-    res = None
 
     #hadle contexts
     if not "." in kw:
@@ -442,6 +461,22 @@ def funcCall():
         namespace = namespaces[nsn]
         namespaceHistory.append(nsn)
         currentNamespace = nsn
+    
+    #handle arguments
+    if kw in funcRequirements:
+        args = funcRequirements[kw]
+        if len(words) != len(args) + 1:
+            return f"err InvalidNumberOfArgs - Expected {len(args)} but got {len(words) - 1}"
+        
+        #args match
+        #GeeksForGeeks taught me zip
+        for argName, value in zip(args, words[1::]):
+            namespace[argName] = value
+
+    #move CPU
+    layers.append(lineNum)
+    lineNum = funcs[kw]
+    res = None
 
 
 def makeNS():
@@ -496,6 +531,7 @@ lineNum = 0
 layers = ["host"]
 locs = {}
 funcs = {}
+funcRequirements = {}
 elsePasses = False
 isLoop = False
 
@@ -534,9 +570,9 @@ while True:
     if line.count('"') % 2 != 0:
         error("err UnterminatedString")
         break
-    if re.search('".*"', line) is not None:
+    if '"' in line:
         #replace spaces in strs with non-spaces
-        for i in re.findall('".*"', line):
+        for i in getStrings(line):
             new = i.replace(" ", "&&&&&")
             line = line.replace(i, new)
     if re.search("{.*}", line) is not None:
@@ -595,7 +631,7 @@ while True:
                 words.pop(index)
                 words.insert(index, string(input()))
             elif not word[1::] in namespace.keys():
-                error("VarNameInvalid")
+                error(f"VarNameInvalid - '{word[1::]}'")
                 break
             else:
                 words.pop(index)

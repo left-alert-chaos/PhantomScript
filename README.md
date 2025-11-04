@@ -186,5 +186,4 @@ end
 ## How it Works
 Variables are stored in a `namespace` dictionary. There are four data types: `string`, `num`, `boolean` and `array`. Nums are all Python floats, so even if you set a variable to a whole number it will be stored as a decimal. Arrays can act like dictionaries or lists, but are dictionaries under the hood.
 
-
 Inline scripts are processed as one word initially and then replaced with their resulting values. Because of this, they use their own type preprocessor. If you're curious, you can look in the `simplify(script)` function in the interpreter.
