@@ -141,8 +141,10 @@ def elseBlock():
 
 
 def whileLoop():
+    global isLoop
     if len(words) != 2:
         return "err InvalidNumberOfArgs"
+    isLoop = True
     if not isinstance(words[1], boolean):
         return f"err InvalidValue - While loops need booleans"
     if words[1].value == "Yes":
@@ -170,6 +172,10 @@ def breakStatement():
 def endBlock():
     global lineNum
     global elsePasses
+    global currentNamespace
+    global namespace
+    global namespaces
+    global isLoop
     layer = layers.pop()
     if len(layers) <= 0:
         return "err EndedHost - No block to end"
@@ -181,12 +187,17 @@ def endBlock():
     #handle function returns
     if isinstance(layer, int):
         lineNum = layer
-        if layer in funcs.keys():
+        if not isLoop:
             #handle return to original context
-            oldContext = namespaceHistory.pop()
+            namespaceHistory.pop()
             namespace = namespaces[namespaceHistory[-1]]
+        else:
+            isLoop = False
         if text[lineNum] == "exit":
             return "exit"
+    if layer == "namespace":
+        currentNamespace = "main"
+        namespace = namespaces["main"]
 
 
 def functionDef():
@@ -194,7 +205,7 @@ def functionDef():
         return "err InvalidNumberOfArgs"
     name = words[1]
     if currentNamespace != "main":
-        name = f"{currentNamespace}:{name}"
+        name = f"{currentNamespace}.{name}"
 
     funcs[name] = lineNum
     layers.append("unmet")
@@ -282,7 +293,6 @@ def attribute():
         return "err InvalidNumberOfArgs"
     name = words[0]
     subcommand = words[1]
-    print(f"words length: {len(words)} words: {words}")
     if isinstance(namespace[name], array):
         print("var to operate on is an array")
         if subcommand == "item":
@@ -387,20 +397,34 @@ def funcCall():
     res = None
 
     #hadle contexts
-    if not ":" in kw:
+    if not "." in kw:
         #func is in main
         namespace = namespaces["main"]
         namespaceHistory.append("main")
     else:
         #func is in custom namespace
-        if len(kw.split(":")) != 2:
+        if len(kw.split(".")) != 2:
             return "err InvalidFunctionName - Incorrect number of ownership levels"
         
-        nsn = kw.split(":")[0]
+        nsn = kw.split(".")[0]
         if nsn not in namespaces.keys():
             return "err InvalidNamespaceName - Undefined namespace"
         namespace = namespaces[nsn]
         namespaceHistory.append(nsn)
+
+
+def makeNS():
+    global namespace
+    global namespaces
+    global currentNamespace
+    if len(words) != 2:
+        return "err InvalidNumberOfArgs"
+    
+    currentNamespace = words[1]
+    namespaces[currentNamespace] = {}
+    namespace = namespaces[currentNamespace]
+
+    layers.append("namespace")
 
 
 #get file name
@@ -442,6 +466,7 @@ layers = ["host"]
 locs = {}
 funcs = {}
 elsePasses = False
+isLoop = False
 
 namespaces = {"main": {}}
 namespace = namespaces["main"]
@@ -465,7 +490,8 @@ kws = {"print": boo,
        "else": elseBlock,
        "write": writeFile,
        "read": readFile,
-       "process": attribute}
+       "process": attribute,
+       "object": makeNS}
 layerStarters = ["if", "while", "else", "function"]
 
 #iterate over file's lines to execute
@@ -536,8 +562,9 @@ while True:
             if word == "$input":
                 words.pop(index)
                 words.insert(index, string(input()))
-            elif not word[1::] in namespace:
-                error(lineNum + 1)
+            elif not word[1::] in namespace.keys():
+                error("VarNameInvalid")
+                break
             else:
                 words.pop(index)
                 words.insert(index, namespace[word[1::]])
