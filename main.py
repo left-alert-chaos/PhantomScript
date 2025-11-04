@@ -216,6 +216,7 @@ def endBlock():
                 namespaceHistory = [old]
             
             namespace = namespaces[namespaceHistory[-1]]
+            currentNamespace = namespaceHistory[-1]
         else:
             isLoop = False
         if text[lineNum] == "exit":
@@ -416,6 +417,7 @@ def funcCall():
     global namespaces
     global kw
     global isLoop
+    global currentNamespace
 
     isLoop = False
 
@@ -439,6 +441,7 @@ def funcCall():
             return "err InvalidNamespaceName - Undefined namespace"
         namespace = namespaces[nsn]
         namespaceHistory.append(nsn)
+        currentNamespace = nsn
 
 
 def makeNS():
@@ -521,7 +524,7 @@ kws = {"print": boo,
        "process": attribute,
        "object": makeNS,
        "copy": instantiate}
-layerStarters = ["if", "while", "else", "function"]
+layerStarters = ["if", "while", "else", "function", "object"]
 
 #iterate over file's lines to execute
 while True:
@@ -623,6 +626,15 @@ while True:
         res = kws[kw]()
     elif kw in funcs.keys():
         res = funcCall()
+    #handle if 'this' keyword is used
+    elif kw.startswith("this."):
+        kw = kw.replace("this", currentNamespace)
+        words.pop(0)
+        words.insert(0, kw)
+        if not kw in funcs.keys():
+            res = f"err InvalidFunctionName - Namespace '{currentNamespace}' has no function '{kw}'"
+        else:
+            res = funcCall()
     elif kw in namespace:
         res = kws["process"]()
 
