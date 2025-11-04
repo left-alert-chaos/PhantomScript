@@ -343,10 +343,8 @@ def attribute():
     name = words[0]
     subcommand = words[1]
     if isinstance(namespace[name], array):
-        print("var to operate on is an array")
         if subcommand == "item":
             namespace[name].value[words[2].value] = words[3]
-            print(namespace[name].value)
     if isinstance(namespace[name], num):
         if subcommand == "++":
             namespace[name].value += 1
