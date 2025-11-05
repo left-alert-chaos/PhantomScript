@@ -15,6 +15,8 @@ To run a program, you can:
 - Run `.\main.exe <file>`
 - Run like a normal Python script and enter the file to execute when prompted.
 
+**It's probably better to use the script than the binary since the binary isn't updated as often.**
+
 ## All Commands/Syntax
 ### Type declarations
 - Nums: just type a number as its own word. 
