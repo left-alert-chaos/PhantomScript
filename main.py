@@ -188,7 +188,7 @@ def whileLoop():
         #at end of loop, return like a function
         layers.append(lineNum - 1)
     else:
-        #if not condition, move on from loop start
+        #if not condition, treat loop like unmet if statement
         layers.append("unmet")
 
 
@@ -216,7 +216,7 @@ def endBlock():
     global namespaceHistory
     layer = layers.pop()
     if len(layers) <= 0:
-        return "err EndedHost - No block to end"
+        return "err EndedMain - No block to end"
     if layer == "unmet":
         elsePasses = True
     else:
@@ -237,8 +237,6 @@ def endBlock():
             currentNamespace = namespaceHistory[-1]
         else:
             isLoop = False
-        if text[lineNum] == "exit":
-            return "exit"
     if layer == "namespace":
         currentNamespace = "main"
         namespace = namespaces["main"]
