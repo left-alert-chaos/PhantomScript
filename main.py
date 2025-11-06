@@ -491,7 +491,6 @@ def makeNS():
 
 #get file name
 filename = ""
-
 if len(sys.argv) == 3 and sys.argv[0].startswith("python"):
     filename = sys.argv[2]
     if not os.path.isfile(filename):
@@ -507,17 +506,15 @@ elif len(sys.argv) == 2 and not sys.argv[0].startswith("python"):
         with open(filename, "r") as target:
             text = target.read()
 
-#i am aware that os.path.isfile exists. Please don't yell at me about this.
 if filename == "":
     while True:
         filename = input("Please select a file to run:\n>")
-        try:
-            with open(filename, "r") as target:
-                text = target.read()
-        except:
-            print("Invalid file.")
+        if os.path.isfile(filename):
+            with open(filename, "r") as file:
+                text = file.read()
+                break
         else:
-            break
+            print("Invalid file name.")
 
 text = text.split("\n") + ["exit"]
 
