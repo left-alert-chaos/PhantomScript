@@ -72,6 +72,12 @@ thing2.chaos
 
 This example does everything from before, but it then uses `copy` to create `thing2`, which is identical to `thing1`. This is how you instantiate classes. However, `copy` just creates a duplicate of whichever namespace you provide so you don't have to give it original `object`s. Instead, you could give it a modified `object` instance and it will copy that instead.
 
+To inherit, you simply type the inherited objects after the object name. Example:
+
+``` PhantomScript
+object objName inherited1 inherited2
+```
+
 #### The 'this' Keyword
 The `this` keyword references the current namespace and is replaced with the current namespace's name at runtime. It is used to make self-referencing `object`s copy safe. Example:
 
@@ -145,6 +151,7 @@ In the above example, the variable `foo` is created to hold an array. An inline 
 - `write <fileName> <text>`: writes a value to a file.
 - `<varName> <operator> <optionalArgs>`: Do an operation on a variable. See explanation.
   - `array item "itemName" "This is the item's value"`
+- `delay <seconds>`: Sleep for seconds
 
 ### Commands Explanation
 - `if`: Bools are stored as either `Yes` or `No`. If the given bool is `No`, then lines are skipped indefinitely. You can exit and start executing again with `end`.

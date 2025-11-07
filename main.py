@@ -101,6 +101,22 @@ def var():
     namespace[words[1]] = words[2]
 
 
+def duplicate(old, new):
+    if not old in namespaces:
+        return f"err InvalidObject - '{old}'"
+    if new not in namespaces:
+        namespaces[new] = {}
+    namespaces[new].update(copy.deepcopy(namespaces[old]))
+
+    #copy all owned funcs
+    owned = {i: j for i, j in funcs.items() if i.startswith(f"{old}.")}
+    for name, index in owned.items():
+        newName = name.replace(f"{old}.", f"{new}.")
+        funcs[newName] = index
+        if name in funcRequirements:
+            funcRequirements[newName] = funcRequirements[name]
+
+
 def instantiate():
     if not len(words) == 3:
         return "err InvalidNumberOfArgs - Expected 3"
@@ -108,15 +124,7 @@ def instantiate():
     old = words[1]
     new = words[2]
 
-    if not words[1] in namespaces:
-        return f"err InvalidObject - '{old}'"
-    namespaces[new] = copy.deepcopy(namespaces[old])
-
-    #copy all owned funcs
-    owned = {i: j for i, j in funcs.items() if i.startswith(f"{old}.")}
-    for name, index in owned.items():
-        newName = name.replace(f"{old}.", f"{new}.")
-        funcs[newName] = index
+    duplicate(old, new)
 
 
 def readFile():
@@ -143,6 +151,14 @@ def writeFile():
         return f"err InvalidValueOrType - {words[2]}"
     with open(str(words[1].value), "w") as file:
         file.write(str(words[2].value))
+
+
+def delay():
+    if len(words) != 2:
+        return f"err InvalidNumberOfArgs - Expected 2 but got {len(words)}"
+    if not isinstance(words[1], num):
+        return f"err InvalidType - Expected num"
+    time.sleep(words[1].value)
 
 
 def loc():
@@ -463,7 +479,7 @@ def funcCall():
         args = funcRequirements[kw]
         if len(words) != len(args) + 1:
             return f"err InvalidNumberOfArgs - Expected {len(args)} but got {len(words) - 1}"
-        
+
         #args match
         #GeeksForGeeks taught me zip
         for argName, value in zip(args, words[1::]):
@@ -479,12 +495,17 @@ def makeNS():
     global namespace
     global namespaces
     global currentNamespace
-    if len(words) != 2:
+    if len(words) < 2:
         return "err InvalidNumberOfArgs"
     
     currentNamespace = words[1]
-    namespaces[currentNamespace] = {}
+    namespaces[words[1]] = {}
     namespace = namespaces[currentNamespace]
+
+    #handle inheritance
+    if len(words) > 2:
+        for i in words[2::]:
+            duplicate(i, words[1])
 
     layers.append("namespace")
 
@@ -552,7 +573,8 @@ kws = {"print": boo,
        "read": readFile,
        "process": attribute,
        "object": makeNS,
-       "copy": instantiate}
+       "copy": instantiate,
+       "delay": delay}
 layerStarters = ["if", "while", "else", "function", "object"]
 
 #iterate over file's lines to execute
@@ -625,6 +647,7 @@ while True:
                 words.insert(index, string(input()))
             elif not word[1::] in namespace.keys():
                 error(f"VarNameInvalid - '{word[1::]}'")
+                print("Ignore any errors after this.")
                 break
             else:
                 words.pop(index)
