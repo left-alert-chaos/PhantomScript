@@ -317,7 +317,15 @@ def add():
 
 
 def error(errType):
-    print(f"Error on line {lineNum + 1}. Line text:\n{line}\n\n{errType}")
+    print(f"Error on line {lineNum + 1}. Line text:\n{line}\n\n{errType}\n\nStack traceback:")
+
+    #traceback
+    for i in layers:
+        if isinstance(i, int):
+            print(f"Line {i + 1}:")
+            print(f"{text[i].strip()}\n")
+    print(f"Line {lineNum + 1}:")
+    print(line)
 
 
 def replaceVals(args):
