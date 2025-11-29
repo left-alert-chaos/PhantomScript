@@ -322,6 +322,8 @@ def error(errType):
     #traceback
     for i in layers:
         if isinstance(i, int):
+            if text[i+1].strip().split()[0] == "while":
+                i += 1
             print(f"Line {i + 1}:")
             print(f"{text[i].strip()}\n")
     print(f"Line {lineNum + 1}:")
