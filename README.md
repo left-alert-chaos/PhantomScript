@@ -113,7 +113,7 @@ let foo { "hi" "bye" }
 print @$foo:0
 
 let foo @$foo:0
-print $foo
+print @$foo:0
 ```
 
 In the above example, the variable `foo` is created to hold an array. An inline script with the operator `0` is then used to get the first value. If you wanted the second value, you'd use the operator `1` and so on and so forth. The second block then sets foo to its first value and prints the first value of that. `foo`'s first value is `"hi"`, and the first value of `"hi"` is `"h"`, so the second block prints `"h"`.
