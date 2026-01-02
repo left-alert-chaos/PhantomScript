@@ -393,7 +393,7 @@ def simplify(script):
             return "err NumsNotIndexable - InlineScript"
         if isinstance(args[0], boolean):
             return "err BooleansNotIndexable - InlineScript"
-        value = args[0].value[key]
+        value = args[0].value[int(key)]
         
         #convert to appropriate language obj
         #if already language obj, leave as-is
