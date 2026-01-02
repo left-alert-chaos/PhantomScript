@@ -322,6 +322,8 @@ def error(errType):
     #traceback
     for i in layers:
         if isinstance(i, int):
+            if text[i+1].strip().split()[0] == "while":
+                i += 1
             print(f"Line {i + 1}:")
             print(f"{text[i].strip()}\n")
     print(f"Line {lineNum + 1}:")
@@ -391,7 +393,7 @@ def simplify(script):
             return "err NumsNotIndexable - InlineScript"
         if isinstance(args[0], boolean):
             return "err BooleansNotIndexable - InlineScript"
-        value = args[0].value[key]
+        value = args[0].value[int(key)]
         
         #convert to appropriate language obj
         #if already language obj, leave as-is
